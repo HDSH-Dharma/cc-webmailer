@@ -5,19 +5,23 @@
 @section('content')
     <div class="notice">
         <h2>Check your inbox</h2>
-        <p>Your registration is in. We sent the booking details to <strong>{{ $email }}</strong>.</p>
+        <p>Your registration is in. The booking details were sent to <strong>{{ $email }}</strong>.</p>
+    </div>
 
-        @if ($bookingCode)
-            <div class="code-stub">
-                <span>Booking code</span>
-                <strong>{{ $bookingCode }}</strong>
+    @if ($bookingCode)
+        <div class="details">
+            <div class="row last">
+                <span class="label">Booking code</span>
+                <h3>{{ $bookingCode }}</h3>
             </div>
-        @endif
+        </div>
+    @endif
 
+    <div class="notice">
         <p>Open the email and press <strong>Confirm My Registration</strong> within
             {{ config('concert.confirm_days') }} days, or the tickets are released.</p>
         <p class="hint">No email after a few minutes? Look in Spam or Junk.</p>
     </div>
 
-    <a href="{{ route('registration.create') }}" class="btn btn-quiet">Register another booking</a>
+    <a href="{{ route('registration.create') }}" class="button solid">Register another booking</a>
 @endsection

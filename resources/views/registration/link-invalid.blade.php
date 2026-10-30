@@ -10,5 +10,5 @@
             <a href="mailto:{{ config('concert.contact_email') }}">{{ config('concert.contact_email') }}</a> for help.</p>
     </div>
 
-    <a href="{{ route('registration.create') }}" class="btn">Register again</a>
+    <a href="{{ route('registration.create') }}" class="button solid">Register again</a>
 @endsection

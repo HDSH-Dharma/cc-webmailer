@@ -12,13 +12,14 @@ Form pendaftaran tiket konser (Laravel 13) untuk tugas Cloud Computing. Setelah 
 | Terhubung ke backend | `RegistrationController`, validasi `StoreRegistrationRequest`, tabel `registrations` |
 | Terhubung ke webmail server | Purelymail SMTP `smtp.purelymail.com:465`, diatur di `.env` |
 | Email konfirmasi ke email yang didaftarkan | `resources/views/emails/registration-confirmation.blade.php`: sapaan, kotak *Registration Details*, tombol hijau, catatan 7 hari, footer kontak |
-| Link halaman registrasi untuk dikumpulkan | `https://hdsh.mav.my.id` (setelah deploy, lihat bagian 4) |
+| Link halaman registrasi untuk dikumpulkan | Domain site baru di CloudPanel, misalnya `https://tiket.mav.my.id` (lihat bagian 4) |
 
 Catatan:
 - Satu email boleh dipakai daftar berkali-kali, jadi dosen bisa tes berulang dengan email yang sama.
 - Kalau SMTP gagal, data **tidak** disimpan (transaksi di-rollback) dan muncul pesan error di form.
 - Opsional: isi `CONCERT_BCC_EMAIL` di `.env` kalau setiap email konfirmasi juga mau dikirimi salinan tersembunyi (BCC) ke alamat tertentu.
-- Nama konser, tanggal, venue, dan harga tiket bisa diubah di `.env` (`CONCERT_*`) atau `config/concert.php`.
+- Nama konser, tagline, tanggal, venue, dan harga tiket bisa diubah di `.env` (`CONCERT_*`) atau `config/concert.php`.
+- Tampilan mengikuti desain portofolio `hdsh.mav.my.id` (maroon `#800000`, aksen hijau `#004d40`, judul serif, mendukung dark mode).
 
 ---
 
@@ -78,24 +79,33 @@ Karena repo **private**, server CloudPanel butuh token untuk `git clone` / `git 
 
 Token ini **hanya bisa membaca repo ini**, jadi aman dipakai di server. Jangan taruh token di kode atau di README.
 
-## 4. Deploy ke CloudPanel (`hdsh.mav.my.id`)
+## 4. Deploy ke CloudPanel
 
-Login SSH sebagai site user (lihat Troubleshooting kalau SSH gagal):
+> **Jangan deploy ke folder `hdsh.mav.my.id`**, karena di situ ada portofoliomu. Buat site baru khusus untuk app ini.
+
+### a. Buat site baru
+
+1. Minta pemilik DNS `mav.my.id` membuat A record subdomain baru, misalnya `tiket.mav.my.id` → `103.103.138.163`.
+2. CloudPanel → **Sites → Add Site → Create a PHP Site**:
+   - **Application:** Laravel 13
+   - **Domain Name:** `tiket.mav.my.id`
+   - **PHP Version:** 8.4 atau 8.5
+   - **Site User:** misalnya `tiket-hdsh`, dengan password yang kuat (simpan password ini)
+3. **SSL/TLS → Actions → New Let's Encrypt Certificate**.
+4. Cek **Settings → Root Directory**: harus `tiket.mav.my.id/public`. Kalau dibuat dengan template Laravel, biasanya sudah otomatis begitu.
+
+### b. Clone dari GitHub pakai PAT
+
+Login SSH sebagai site user baru (lihat Troubleshooting kalau SSH gagal):
 
 ```bash
-ssh mav-hdsh@103.103.138.163
-```
-
-Clone repo ke folder site. Folder lama di-backup dulu:
-
-```bash
-cd ~/htdocs
-mv hdsh.mav.my.id hdsh.mav.my.id.old
+ssh tiket-hdsh@103.103.138.163
+cd ~/htdocs/tiket.mav.my.id
+ls -A                                            # harus kosong; kalau ada isinya, pindahkan dulu
 git config --global credential.helper store      # simpan PAT supaya git pull berikutnya nggak tanya lagi
-git clone https://github.com/HDSH-Dharma/cc-webmailer.git hdsh.mav.my.id
+git clone https://github.com/HDSH-Dharma/cc-webmailer.git .
 #   Username: HDSH-Dharma
 #   Password: <paste PAT github_pat_...>
-cd hdsh.mav.my.id
 cp .env.example .env
 nano .env
 ```
@@ -105,7 +115,7 @@ Di `.env` server, ubah:
 ```env
 APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://hdsh.mav.my.id
+APP_URL=https://tiket.mav.my.id
 MAIL_PASSWORD=password-mailbox-hdsh
 ```
 
@@ -117,18 +127,14 @@ bash deploy.sh
 
 `deploy.sh` menjalankan `git pull`, `composer install --no-dev`, membuat `APP_KEY` dan file SQLite kalau belum ada, `migrate`, dan `optimize`.
 
-Di CloudPanel:
-
-1. **Sites → hdsh.mav.my.id → Settings → Root Directory** harus `hdsh.mav.my.id/public`. Laravel hanya boleh disajikan dari folder `public`.
-2. **SSL/TLS → Actions → New Let's Encrypt Certificate** supaya `https://hdsh.mav.my.id` aktif.
-3. Buka https://hdsh.mav.my.id, isi form dengan email kamu sendiri, lalu cek inbox. Link inilah yang dikumpulkan untuk tugas.
+Buka `https://tiket.mav.my.id`, isi form dengan email kamu sendiri, lalu cek inbox. Link inilah yang dikumpulkan untuk tugas.
 
 ### Update setelah ada perubahan kode
 
 Di laptop: `git add . && git commit -m "..." && git push`. Lalu di server:
 
 ```bash
-cd ~/htdocs/hdsh.mav.my.id && bash deploy.sh
+cd ~/htdocs/tiket.mav.my.id && bash deploy.sh
 ```
 
 ## Troubleshooting
