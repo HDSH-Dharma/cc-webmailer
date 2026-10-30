@@ -85,12 +85,12 @@ Token ini **hanya bisa membaca repo ini**, jadi aman dipakai di server. Jangan t
 
 ### a. Buat site baru
 
-1. Minta pemilik DNS `mav.my.id` membuat A record subdomain baru, misalnya `tiket.mav.my.id` → `103.103.138.163`.
+1. Di DNS Management `mav.my.id` (MyDomaiNesia), tambahkan A record subdomain baru, misalnya `tiket` → `103.103.138.174`. Ini IP publik yang sama dengan record `hdsh`, `www`, dll. IP yang tampil di header CloudPanel (`.163`) bukan IP yang dipakai DNS.
 2. CloudPanel → **Sites → Add Site → Create a PHP Site**:
    - **Application:** Laravel 13
    - **Domain Name:** `tiket.mav.my.id`
    - **PHP Version:** 8.4 atau 8.5
-   - **Site User:** misalnya `tiket-hdsh`, dengan password yang kuat (simpan password ini)
+   - **Site User:** misalnya `mav-tiket`, dengan password yang kuat (simpan password ini)
 3. **SSL/TLS → Actions → New Let's Encrypt Certificate**.
 4. Cek **Settings → Root Directory**: harus `tiket.mav.my.id/public`. Kalau dibuat dengan template Laravel, biasanya sudah otomatis begitu.
 
@@ -99,7 +99,7 @@ Token ini **hanya bisa membaca repo ini**, jadi aman dipakai di server. Jangan t
 Login SSH sebagai site user baru (lihat Troubleshooting kalau SSH gagal):
 
 ```bash
-ssh tiket-hdsh@103.103.138.163
+ssh mav-tiket@tiket.mav.my.id
 cd ~/htdocs/tiket.mav.my.id
 ls -A                                            # harus kosong; kalau ada isinya, pindahkan dulu
 git config --global credential.helper store      # simpan PAT supaya git pull berikutnya nggak tanya lagi
@@ -141,7 +141,7 @@ cd ~/htdocs/tiket.mav.my.id && bash deploy.sh
 
 | Masalah | Solusi |
 |---|---|
-| `ssh: Connection reset by ... port 22` | Jaringan (misalnya Wi-Fi kampus) atau firewall server memblokir port 22. Coba lewat hotspot HP, atau minta admin server whitelist IP kamu (`curl ifconfig.me`) di CloudPanel → Admin Area → Security → Firewall. |
+| `ssh: Connection reset by ... port 22` | Pastikan SSH ke nama domain atau IP publik `103.103.138.174`, bukan `.163`. Kalau masih ditolak, jaringan (misalnya Wi-Fi kampus) atau firewall server memblokir port 22. Coba lewat hotspot HP, atau minta admin server whitelist IP kamu (`curl ifconfig.me`) di CloudPanel → Admin Area → Security → Firewall. |
 | Muncul pesan *"We could not send the confirmation email"* | Cek `MAIL_USERNAME`/`MAIL_PASSWORD` di `.env`. Detail error ada di `storage/logs/laravel.log`, atau set `APP_DEBUG=true` sementara. Setelah mengubah `.env` di server, jalankan `php artisan optimize`. |
 | Link konfirmasi selalu "invalid or has expired" | `APP_URL` harus sama persis dengan alamat situs (https vs http), lalu jalankan `php artisan optimize`. Link yang sudah lewat 7 hari memang ditolak. |
 | `composer` mengeluh versi PHP | Laravel 13 butuh PHP ≥ 8.3. Cek `php -v`. Di CloudPanel bisa pakai binary versi spesifik, misalnya `php8.4 /usr/local/bin/composer install`. |
