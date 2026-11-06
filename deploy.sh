@@ -33,4 +33,7 @@ php artisan migrate --force
 echo "==> Caching config, routes and views"
 php artisan optimize
 
+php artisan storage:link 2>/dev/null || true
+php artisan queue:restart 
+
 echo "Done. Open $(grep -E '^APP_URL=' .env | cut -d= -f2-)"

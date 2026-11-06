@@ -33,8 +33,20 @@ jobs:
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite
           coverage: none
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build assets
+        run: npm run build
 
       - name: Prepare environment
         run: |
@@ -52,11 +64,39 @@ jobs:
     name: Deploy to CloudPanel
     needs: tests
     runs-on: ubuntu-latest
-    # Only runs after a push to main, and only once the DEPLOY_HOST repository
-    # variable is set (Settings > Secrets and variables > Actions > Variables).
+    # Hanya jalan setelah push ke main, dan hanya jika variable DEPLOY_HOST sudah diisi
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DEPLOY_HOST != ''
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build assets
+        run: npm run build
+
+      - name: Upload built assets to the server
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ vars.DEPLOY_HOST }}
+          username: ${{ vars.DEPLOY_USER }}
+          port: ${{ vars.DEPLOY_PORT || 22 }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          source: public/build
+          target: ${{ vars.DEPLOY_PATH }}/public
+          strip_components: 1
+          overwrite: true
+
       - name: Run deploy.sh on the server
         uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
         with:
