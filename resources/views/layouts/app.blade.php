@@ -224,7 +224,7 @@
         <div class="wrap">
             <a class="brand" href="{{ route('registration.create') }}">{{ config('concert.name') }}</a>
             <nav aria-label="Main">
-                <a href="{{ route('registration.create') }}#tickets">Tickets</a>
+                <a href="{{ route('registration.create') }}#tickets">HALLOOOOOOO</a>
                 <a href="mailto:{{ config('concert.contact_email') }}">Contact</a>
             </nav>
         </div>
