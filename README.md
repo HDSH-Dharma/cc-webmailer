@@ -137,6 +137,27 @@ Di laptop: `git add . && git commit -m "..." && git push`. Lalu di server:
 cd ~/htdocs/tiket.mav.my.id && bash deploy.sh
 ```
 
+## 5. GitHub Actions (`.github/workflows/laravel.yml`)
+
+Setiap push / pull request ke `main`, GitHub Actions menjalankan `composer install`, migrasi, dan `php artisan test` di PHP 8.3 dan 8.5. Hasilnya ada di tab **Actions** repo.
+
+**Deploy otomatis (opsional).** Kalau test lolos dan ada push ke `main`, workflow bisa SSH ke server lalu menjalankan `bash deploy.sh`. Job ini mati sampai kamu mengaktifkannya:
+
+1. Di Mac, buat key khusus deploy (tanpa passphrase):
+   ```bash
+   ssh-keygen -t ed25519 -f ~/.ssh/cc-webmailer-deploy -N "" -C "github-actions-deploy"
+   ```
+2. Pasang public key-nya di server sebagai site user:
+   ```bash
+   ssh-copy-id -i ~/.ssh/cc-webmailer-deploy.pub mav-tiket@tiket.mav.my.id
+   ```
+3. Di GitHub repo → **Settings → Secrets and variables → Actions**:
+   - Tab **Secrets** → `DEPLOY_SSH_KEY` = isi file `~/.ssh/cc-webmailer-deploy` (private key, termasuk baris BEGIN/END). Salin dengan `pbcopy < ~/.ssh/cc-webmailer-deploy`.
+   - Tab **Variables** → `DEPLOY_HOST` = `tiket.mav.my.id`, `DEPLOY_USER` = `mav-tiket`, `DEPLOY_PATH` = `/home/mav-tiket/htdocs/tiket.mav.my.id`.
+4. Push sesuatu ke `main`. Job **Deploy to CloudPanel** akan jalan setelah test hijau.
+
+Catatan: `deploy.sh` di server memakai `git pull` dengan PAT yang tersimpan di server. Kalau PAT kedaluwarsa, deploy otomatis gagal di langkah `git pull`. Buat PAT baru, lalu di server jalankan `rm ~/.git-credentials` dan `git pull` sekali untuk login ulang.
+
 ## Troubleshooting
 
 | Masalah | Solusi |
